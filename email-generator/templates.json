@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Back To School - September enrollment",
+    "subject": "Back to School – Secure {{StudentName}}'s Tutoring Spot",
+    "body": "Dear {{ParentName}},\n\nI hope you're doing well and that you've been enjoying the summer.\n\nAs we get closer to the new school year, I wanted to reach out regarding {{StudentName}}'s tutoring program. Since your program was paused, we haven't yet heard if you'd like to resume in September. Timeslots are filling up quickly, and we'd love to make sure you can secure your preferred days and times before they're gone.\n\nMost importantly, we want {{StudentName}} to get the support needed to head back to school with momentum, continuing to build on the progress made during the summer. Keeping that momentum will help {{StudentName}} start the year with confidence and set the stage for a successful year.\n\nPlease let us know your plans at your earliest convenience so we can reserve the best schedule for {{StudentName}}. We'd be delighted to welcome you back this fall and continue supporting {{StudentName}}'s learning journey.\n\nLooking forward to hearing from you!\n\nRegards,"
+  },
+  {
+    "name": "Back To School - Confidence Kickstart (Alumni offer)",
+    "subject": "Let's give {{StudentName}} a confident start this year",
+    "body": "Hi {{ParentName}},\n\nWe've been thinking about {{StudentName}} and how quickly September is approaching! As the new school year gets closer, now is the perfect time to check in and make sure {{StudentName}} feels not just ready, but confident and excited to learn.\n\nWe'd love to invite {{StudentName}} back for a complimentary assessment. This is a valuable opportunity to see:\n\n•  How ready {{StudentName}} is for the new grade\n•  Any areas that may need a quick boost\n•  Strengths and progress since we last worked together\n\nYou'll receive a personalized assessment report with clear next steps you can use at home or in tutoring.\n\nSpecial Alumni Offer:\nAs our valued alumni, when you re-enroll during our Confidence Kickstart Period (ends on August 31st), you'll receive 20% off tuition for September — so {{StudentName}} can walk into school feeling prepared and positive.\n\nComplimentary assessments are available until August 31st.\n\nJust reply to this email or give us a quick call to reserve your spot — we'd love to see {{StudentName}} again and help {{StudentName}} start the year strong!\n\nRegards,"
+  },
+  {
+    "name": "Exit - Farewell & Best Wishes",
+    "subject": "Farewell and Best Wishes from SCHOLARS",
+    "body": "Dear {{ParentName}},\n\nI hope this email finds you well. As we come to the end of {{StudentName}}'s tutoring program, we wanted to take a moment to express our heartfelt gratitude for entrusting us with your child's educational journey. It has been a privilege to work with {{StudentName}} over the past months, and we wanted to extend our sincerest thanks for the opportunity.\n\nWhile we are sad to see {{StudentName}} go, we take comfort in knowing that we have played a part in this learning journey. We are immensely proud of {{StudentName}}'s accomplishments and all the progress made along the way.\n\nPlease know that our doors are always open, and should {{StudentName}} ever require additional support or tutoring in the future, we would be more than happy to assist in any way we can. Our commitment to {{StudentName}}'s academic success remains unwavering, and we are here to support {{StudentName}} every step of the way.\n\nRegards,"
+  }
+]

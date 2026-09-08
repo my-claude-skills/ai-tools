@@ -1,0 +1,14 @@
+# OS / editor cruft
+desktop.ini
+.DS_Store
+Thumbs.db
+
+# Server temp / backup artifacts (templates.json ITSELF is tracked — do not ignore it)
+templates.json.tmp
+templates.json.bak
+
+# Generated Word docs
+*.doc
+
+# Test spreadsheets (remove this line if you want to track sample data)
+Email-Template-test-csv.xlsx
