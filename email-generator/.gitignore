@@ -11,4 +11,4 @@ templates.json.bak
 *.doc
 
 # Test spreadsheets (remove this line if you want to track sample data)
-Email-Template-test-csv.xlsx
+#Email-Template-test-csv.xlsx
