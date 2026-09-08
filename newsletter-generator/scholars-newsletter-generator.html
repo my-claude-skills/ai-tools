@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scholars Queensway — Newsletter Generator</title>
+<style>
+  :root{
+    --ink:#1a2b3c;
+    --slate:#5a6b7c;
+    --line:#dfe4ea;
+    --paper:#f5f3ee;
+    --panel:#ffffff;
+    --brand:#0f5c8c;      /* Scholars blue */
+    --brand-deep:#0a3d5e;
+    --gold:#e6a92e;       /* accent for stars / scholars */
+    --mint:#e8f2f7;
+    --focus:#0f5c8c;
+    --danger:#b04a3a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    background:var(--paper);
+    height:100vh;
+    overflow:hidden;
+  }
+  .app{display:grid;grid-template-columns:minmax(360px,440px) 1fr;height:100vh;}
+
+  /* ---------- LEFT: EDITOR ---------- */
+  .editor{
+    background:var(--panel);
+    border-right:1px solid var(--line);
+    overflow-y:auto;
+    padding:0;
+  }
+  .editor-head{
+    position:sticky;top:0;z-index:5;
+    background:var(--brand-deep);
+    color:#fff;
+    padding:18px 22px;
+    border-bottom:1px solid var(--brand-deep);
+  }
+  .editor-head h1{margin:0;font-size:16px;letter-spacing:.2px;font-weight:650;}
+  .editor-head p{margin:4px 0 0;font-size:12px;opacity:.75;}
+  .grp{border-bottom:1px solid var(--line);padding:16px 22px;}
+  .grp > h2{
+    margin:0 0 12px;font-size:11px;font-weight:700;letter-spacing:.09em;
+    text-transform:uppercase;color:var(--brand);
+    display:flex;align-items:center;gap:7px;
+  }
+  label{display:block;font-size:12px;font-weight:600;color:var(--slate);margin:0 0 4px;}
+  .field{margin-bottom:12px;}
+  .field:last-child{margin-bottom:0;}
+  input[type=text],input[type=url],textarea,select{
+    width:100%;padding:8px 10px;font-size:13px;font-family:inherit;color:var(--ink);
+    border:1px solid var(--line);border-radius:7px;background:#fcfcfb;transition:border-color .12s,box-shadow .12s;
+  }
+  textarea{resize:vertical;min-height:64px;line-height:1.5;}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--focus);box-shadow:0 0 0 3px rgba(15,92,140,.12);}
+  .hint{font-size:11px;color:#94a1ac;margin-top:4px;line-height:1.4;}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .card{
+    border:1px solid var(--line);border-radius:9px;padding:12px;margin-bottom:10px;background:#fbfcfd;position:relative;
+  }
+  .card .rmv{
+    position:absolute;top:8px;right:8px;border:none;background:none;color:var(--danger);
+    font-size:16px;line-height:1;cursor:pointer;padding:2px 5px;border-radius:5px;
+  }
+  .card .rmv:hover{background:#f7e7e3;}
+  .addbtn{
+    width:100%;padding:8px;font-size:12px;font-weight:650;color:var(--brand);
+    background:var(--mint);border:1px dashed #a9c9dc;border-radius:7px;cursor:pointer;transition:background .12s;
+  }
+  .addbtn:hover{background:#d8e9f3;}
+  .gen-btn{width:100%;padding:14px;font-size:15px;font-weight:700;color:#fff;background:var(--brand);border:none;border-radius:9px;cursor:pointer;letter-spacing:.02em;transition:background .12s,transform .06s;box-shadow:0 3px 10px rgba(15,92,140,.25);}
+  .gen-btn:hover{background:var(--brand-deep);}
+  .gen-btn:active{transform:translateY(1px);}
+  .imgwrap{display:flex;align-items:center;gap:10px;margin-top:6px;}
+  .thumb{width:46px;height:46px;border-radius:7px;object-fit:cover;border:1px solid var(--line);background:#eef1f4;flex:none;}
+  .filebtn{font-size:11px;font-weight:600;color:var(--brand);cursor:pointer;text-decoration:underline;}
+  .filebtn input{display:none;}
+
+  /* ---------- RIGHT: PREVIEW ---------- */
+  .preview-side{display:flex;flex-direction:column;overflow:hidden;background:var(--paper);}
+  .toolbar{
+    display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--line);
+    background:var(--panel);
+  }
+  .toolbar .title{font-size:13px;font-weight:650;color:var(--slate);margin-right:auto;}
+  .btn{
+    font-size:12.5px;font-weight:650;padding:8px 15px;border-radius:7px;cursor:pointer;border:1px solid var(--line);
+    background:#fff;color:var(--ink);transition:all .12s;
+  }
+  .btn:hover{border-color:var(--brand);color:var(--brand);}
+  .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff;}
+  .btn.primary:hover{background:var(--brand-deep);color:#fff;}
+  .scroll{overflow-y:auto;padding:26px;flex:1;}
+
+  /* ---------- EMAIL RENDER ---------- */
+  .email{
+    max-width:620px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;
+    box-shadow:0 6px 30px rgba(26,43,60,.10);
+    font-family:Georgia,"Times New Roman",serif;color:#26333f;
+  }
+  .em-banner{background:linear-gradient(135deg,var(--brand) 0%,var(--brand-deep) 100%);color:#fff;padding:34px 30px 30px;text-align:center;}
+  .em-banner .kick{font-family:Georgia,serif;font-size:11px;letter-spacing:.22em;text-transform:uppercase;opacity:.8;}
+  .em-banner h1{margin:8px 0 0;font-size:27px;font-weight:700;letter-spacing:.3px;}
+  .em-banner .month{margin-top:4px;font-size:14px;opacity:.9;font-style:italic;}
+  .em-body{padding:8px 30px 30px;}
+  .em-section{padding:22px 0;border-bottom:1px solid #eef0f2;}
+  .em-section:last-child{border-bottom:none;}
+  .em-h{font-size:12px;letter-spacing:.11em;text-transform:uppercase;color:var(--brand);font-weight:700;margin:0 0 12px;font-family:-apple-system,Segoe UI,sans-serif;}
+  .em-open{font-size:16px;line-height:1.7;color:#33424f;}
+  .em-open .hi{font-size:20px;font-weight:700;color:var(--brand-deep);display:block;margin-bottom:8px;}
+  ul.em-list{margin:0;padding-left:20px;line-height:1.85;font-size:15px;}
+  ul.em-list li::marker{color:var(--gold);}
+  .em-photos{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 12px;}
+  .em-photos img{width:130px;height:100px;object-fit:cover;border-radius:9px;border:1px solid #e6eaee;}
+  .em-note{font-size:15px;line-height:1.7;color:#3a4854;}
+  .em-cta-ask{font-style:italic;color:var(--brand);font-size:14px;margin-top:8px;}
+  .scholar{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px;}
+  .scholar img{width:74px;height:74px;border-radius:50%;object-fit:cover;border:3px solid var(--gold);flex:none;}
+  .scholar .s-body{font-size:15px;line-height:1.55;}
+  .scholar .s-name{font-weight:700;color:var(--brand-deep);}
+  .store-items{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;}
+  .store-chip{background:var(--mint);color:var(--brand-deep);font-family:-apple-system,Segoe UI,sans-serif;font-size:13px;font-weight:600;padding:6px 13px;border-radius:20px;}
+  .dates{list-style:none;padding:0;margin:0;}
+  .dates li{display:flex;gap:14px;padding:8px 0;border-bottom:1px dashed #eef0f2;font-size:15px;}
+  .dates li:last-child{border-bottom:none;}
+  .dates .d{font-weight:700;color:var(--brand);min-width:120px;font-family:-apple-system,Segoe UI,sans-serif;font-size:13.5px;}
+  .offer{background:linear-gradient(135deg,#fff7e8,#fdeecb);border:1px solid #f0d896;border-radius:12px;padding:20px 22px;}
+  .offer .o-tag{font-family:-apple-system,Segoe UI,sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#a9791a;background:#fbe9bf;display:inline-block;padding:3px 9px;border-radius:5px;margin-bottom:10px;}
+  .offer .o-text{font-size:15.5px;line-height:1.65;color:#4a3c1d;}
+  .offer .o-cta{display:inline-block;margin-top:14px;background:var(--brand);color:#fff;text-decoration:none;font-family:-apple-system,Segoe UI,sans-serif;font-weight:650;font-size:14px;padding:11px 22px;border-radius:8px;}
+  .thanks{font-size:15.5px;line-height:1.7;color:#3a4854;}
+  .social{text-align:center;padding:20px 0 4px;}
+  .social .lead{font-family:-apple-system,Segoe UI,sans-serif;font-size:13px;font-weight:600;color:var(--slate);margin-bottom:12px;}
+  .social a{display:inline-block;margin:0 6px;text-decoration:none;background:var(--brand);color:#fff;font-family:-apple-system,Segoe UI,sans-serif;font-weight:650;font-size:13px;padding:9px 18px;border-radius:8px;}
+  .wisdom{text-align:center;padding:6px 10px;}
+  .wisdom .quote{font-size:18px;font-style:italic;line-height:1.6;color:var(--brand-deep);}
+  .wisdom .attr{font-size:13px;color:#8a97a2;margin-top:8px;font-family:-apple-system,Segoe UI,sans-serif;}
+  .wisdom .grat{font-size:15px;color:#3a4854;margin-top:16px;line-height:1.6;}
+  .signoff{font-size:15.5px;line-height:1.6;margin-top:18px;}
+  .signoff .team{font-weight:700;color:var(--brand-deep);}
+  .em-footer{background:#f5f3ee;padding:20px 30px;text-align:center;font-family:-apple-system,Segoe UI,sans-serif;font-size:12px;color:#8a97a2;line-height:1.7;}
+  .em-footer a{color:#8a97a2;}
+  .empty-hint{color:#c3ccd4;font-style:italic;font-size:14px;}
+
+  /* emoji picker */
+  .emoji-picker{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+  .emoji-btn{font-size:20px;line-height:1;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#fcfcfb;cursor:pointer;transition:all .12s;}
+  .emoji-btn:hover{border-color:var(--brand);background:var(--mint);}
+  .emoji-btn.sel{border-color:var(--brand);background:var(--mint);box-shadow:0 0 0 2px rgba(15,92,140,.15);}
+
+  /* KPI editor rows */
+  .kpi-row{display:grid;grid-template-columns:1fr 96px;gap:10px;align-items:end;margin-bottom:12px;}
+  .kpi-row .kpi-label{font-size:12px;font-weight:600;color:var(--slate);}
+  .kpi-preview{font-size:12px;color:var(--brand-deep);background:var(--mint);border-radius:6px;padding:6px 9px;margin-top:6px;line-height:1.4;grid-column:1/3;}
+  .kpi-preview.empty{background:#f3f5f7;color:#aab4bd;font-style:italic;}
+
+  /* KPI render in email */
+  .em-kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:6px 0 4px;}
+  .kpi-card{background:linear-gradient(135deg,var(--mint),#f4faff);border:1px solid #d6e6f0;border-radius:11px;padding:16px 12px;text-align:center;}
+  .kpi-card .num{font-family:-apple-system,Segoe UI,sans-serif;font-size:30px;font-weight:800;color:var(--brand);line-height:1;}
+  .kpi-card .cap{font-family:-apple-system,Segoe UI,sans-serif;font-size:11.5px;color:var(--slate);margin-top:7px;line-height:1.35;}
+  @media(max-width:520px){.em-kpis{grid-template-columns:1fr}}
+
+  /* announcements */
+  .em-announce{background:#fff4f0;border-left:4px solid var(--danger);border-radius:0 10px 10px 0;padding:16px 20px;margin:0 0 4px;}
+  .em-announce .a-h{font-family:-apple-system,Segoe UI,sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--danger);margin-bottom:8px;}
+  .em-announce ul{margin:0;padding-left:18px;line-height:1.7;font-size:15px;color:#4a3730;}
+  .em-announce ul li::marker{color:var(--danger);}
+
+  /* values band */
+  .em-values{background:var(--brand-deep);color:#fff;padding:22px 30px;text-align:center;}
+  .em-values .v-h{font-family:-apple-system,Segoe UI,sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.75;margin-bottom:12px;}
+  .em-values .v-list{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;}
+  .em-values .v-chip{border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:7px 16px;font-family:-apple-system,Segoe UI,sans-serif;font-size:13.5px;font-weight:600;letter-spacing:.02em;}
+  .em-values .v-para{max-width:480px;margin:0 auto;font-family:Georgia,serif;font-size:15.5px;line-height:1.75;opacity:.95;}
+  @media (max-width:820px){
+    body{overflow:auto;height:auto;}
+    .app{grid-template-columns:1fr;height:auto;}
+    .editor{border-right:none;border-bottom:1px solid var(--line);}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ EDITOR ============ -->
+  <div class="editor">
+    <div class="editor-head">
+      <h1>🎓 Newsletter Generator</h1>
+      <p>Fill in the month. Preview updates live. Export when ready.</p>
+    </div>
+
+    <!-- Header -->
+    <div class="grp">
+      <h2>Header</h2>
+      <div class="field"><label>Month</label><input type="text" id="month" placeholder="March 2026"></div>
+      <div class="field">
+        <label>Season emoji <span style="font-weight:400;color:#aab4bd">(click one)</span></label>
+        <input type="text" id="emoji" placeholder="🌷" style="max-width:70px;text-align:center;font-size:18px">
+        <div class="emoji-picker" id="emojiPicker"></div>
+        <div class="hint">Click a suggestion, or type any emoji in the box.</div>
+      </div>
+      <div class="field"><label>Subject line <span style="font-weight:400;color:#aab4bd">(keep &lt;45 chars)</span></label><input type="text" id="subject" placeholder="Scholars Queensway — March News 🎓"></div>
+    </div>
+
+    <!-- Opening -->
+    <div class="grp">
+      <h2>Opening</h2>
+      <div class="field"><label>Greeting headline</label><input type="text" id="greetHead" placeholder="Happy March from all of us at Scholars!"></div>
+      <div class="field"><label>Opening note</label><textarea id="openNote" placeholder="Spring is in the air, and our centre has been buzzing…"></textarea></div>
+    </div>
+
+    <!-- Announcements (after opening) -->
+    <div class="grp">
+      <h2>📌 Important Announcements</h2>
+      <div class="field"><label>Announcements (one per line)</label><textarea id="announce" placeholder="No classes Mar 10–14 (March Break)&#10;New Saturday morning slots now open&#10;Spring registration closes Mar 31"></textarea></div>
+      <div class="hint">Appears right after the opening — for the things every parent must see.</div>
+    </div>
+
+    <!-- Month in Review (KPI markers first, then custom highlights) -->
+    <div class="grp">
+      <h2>📚 Month in Review</h2>
+      <div class="hint" style="margin-bottom:12px">Enter each number — it becomes the first bullets, worded the same way every month. Leave blank to skip.</div>
+
+      <div class="kpi-row">
+        <div><div class="kpi-label">% moved up a level / grade band</div></div>
+        <input type="text" id="kpiLevelPct" placeholder="34" inputmode="decimal">
+      </div>
+      <div class="kpi-preview empty" id="prevLevel">Enter a % to preview</div>
+
+      <div class="kpi-row" style="margin-top:14px">
+        <div><div class="kpi-label">Scholars points redeemed</div></div>
+        <input type="text" id="kpiRedeemed" placeholder="87" inputmode="numeric">
+      </div>
+      <div class="kpi-preview empty" id="prevRedeem">Enter a count to preview</div>
+
+      <div class="kpi-row" style="margin-top:14px">
+        <div><div class="kpi-label">Sessions delivered</div></div>
+        <input type="text" id="kpiSessions" placeholder="642" inputmode="numeric">
+      </div>
+      <div class="kpi-preview empty" id="prevSess">Enter a count to preview</div>
+
+      <div class="field" style="margin-top:16px"><label>Custom highlights (one per line — added after the numbers)</label><textarea id="review" placeholder="Ran our first March Break prep intensive — 18 students&#10;Kicked off our new Grade 9 math readiness program&#10;Welcomed two new tutors"></textarea></div>
+    </div>
+
+    <!-- Manipulation shelf -->
+    <div class="grp">
+      <h2>🧩 Manipulation Shelf</h2>
+      <div class="field"><label>What students worked with / how it helped</label><textarea id="manipText" placeholder="This month our students got hands-on with fraction tiles — watching abstract fractions become something they could hold made all the difference for our Grade 3 group."></textarea></div>
+      <label>Photos</label>
+      <div id="manipPhotos"></div>
+      <button class="addbtn" data-add="manip">+ Add photo</button>
+    </div>
+
+    <!-- Scholars of the month -->
+    <div class="grp">
+      <h2>⭐ Scholars of the Month</h2>
+      <div id="scholars"></div>
+      <button class="addbtn" data-add="scholar">+ Add scholar</button>
+      <div class="hint">Only add students with a signed photo media-release on file.</div>
+    </div>
+
+    <!-- What to look forward to (opens the new month) -->
+    <div class="grp">
+      <h2>🔭 What to Look Forward To</h2>
+      <div class="field"><label>Coming up this month (one per line)</label><textarea id="lookForward" placeholder="Spring reading challenge kicks off — prizes for top readers&#10;New coding club starts Wednesdays&#10;Parent-teacher progress check-ins mid-month"></textarea></div>
+      <div class="hint">Starts the month-ahead half of the newsletter — events, programs, things to expect.</div>
+    </div>
+
+    <!-- Scholars store -->
+    <div class="grp">
+      <h2>🛍️ Scholars Store</h2>
+      <div class="field"><label>New items (one per line)</label><textarea id="storeItems" placeholder="Glow-in-the-dark pencils&#10;Mini puzzle sets&#10;Achievement badges"></textarea></div>
+      <div class="field"><label>How points are earned</label><input type="text" id="storeEarn" placeholder="effort, attendance & milestones"></div>
+      <label>Photo of new items</label>
+      <div id="storePhotos"></div>
+      <button class="addbtn" data-add="store">+ Add photo</button>
+    </div>
+
+    <!-- Dates -->
+    <div class="grp">
+      <h2>📅 Dates to Remember</h2>
+      <div id="dates"></div>
+      <button class="addbtn" data-add="date">+ Add date</button>
+    </div>
+
+    <!-- Offer -->
+    <div class="grp">
+      <h2>🎁 Offer Block</h2>
+      <div class="field">
+        <label>Which segment is this send for?</label>
+        <select id="segment">
+          <option value="enrolled">Enrolled — drive referrals</option>
+          <option value="onhold">On-hold — reactivate</option>
+          <option value="exit">Exits — win-back</option>
+          <option value="lead">Leads — convert assessment</option>
+          <option value="friends">Friends list — soft nurture</option>
+          <option value="custom">Custom (write your own)</option>
+        </select>
+        <div class="hint">Picking a segment fills the offer text below. Edit freely.</div>
+      </div>
+      <div class="field"><label>Offer text</label><textarea id="offerText"></textarea></div>
+      <div class="two">
+        <div class="field"><label>Button label</label><input type="text" id="offerCta" placeholder="Book a free assessment"></div>
+        <div class="field"><label>Button link</label><input type="url" id="offerLink" placeholder="https://…"></div>
+      </div>
+    </div>
+
+    <!-- Values (verbatim paragraph from playbook) -->
+    <div class="grp">
+      <h2>🌟 Our Values</h2>
+      <div class="field"><label>Values paragraph <span style="font-weight:400;color:#aab4bd">(pasted from the Scholars playbook — used word for word)</span></label><textarea id="values" placeholder="Paste the values paragraph exactly as it appears in the playbook…" style="min-height:100px"></textarea></div>
+      <div class="hint">Reproduced exactly as entered — no edits, no reformatting.</div>
+    </div>
+
+    <!-- Thanks + social -->
+    <div class="grp">
+      <h2>💙 Thanks & Social</h2>
+      <div class="field"><label>Thank-you note</label><textarea id="thanks" placeholder="To our families: your trust means everything…"></textarea></div>
+      <div class="two">
+        <div class="field"><label>Instagram link</label><input type="url" id="insta" placeholder="https://instagram.com/…"></div>
+        <div class="field"><label>Facebook link</label><input type="url" id="fb" placeholder="https://facebook.com/…"></div>
+      </div>
+    </div>
+
+    <!-- Wisdom + signoff -->
+    <div class="grp">
+      <h2>✨ Closing</h2>
+      <div class="field"><label>Wisdom note / quote</label><textarea id="wisdom" placeholder="Children are not things to be molded, but people to be unfolded."></textarea></div>
+      <div class="field"><label>Quote attribution <span style="font-weight:400;color:#aab4bd">(optional)</span></label><input type="text" id="wisdomAttr" placeholder="— Jess Lair"></div>
+      <div class="field"><label>Closing gratitude line</label><input type="text" id="gratitude" placeholder="Thank you for letting us be part of your child's journey."></div>
+      <div class="field"><label>Sign-off name</label><input type="text" id="signName" placeholder="Carlos"></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="grp">
+      <h2>Footer</h2>
+      <div class="field"><label>Address</label><input type="text" id="address" placeholder="778 The Queensway, Etobicoke"></div>
+      <div class="two">
+        <div class="field"><label>Phone</label><input type="text" id="phone" placeholder="(416) XXX-XXXX"></div>
+        <div class="field"><label>Email</label><input type="text" id="email" placeholder="info@…"></div>
+      </div>
+    </div>
+
+    <!-- Generate -->
+    <div class="grp" style="border-bottom:none">
+      <button class="gen-btn" id="generate">✨ Generate Newsletter</button>
+      <div class="hint" style="text-align:center;margin-top:8px">Refreshes the preview and jumps to it. Then use Copy HTML or Download.</div>
+    </div>
+  </div>
+  <div class="preview-side">
+    <div class="toolbar">
+      <span class="title">Live preview</span>
+      <button class="btn" id="loadSample">Load sample</button>
+      <button class="btn" id="copyHtml">Copy HTML</button>
+      <button class="btn primary" id="download">Download .html</button>
+    </div>
+    <div class="scroll">
+      <div class="email" id="emailPreview"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------------- state ---------------- */
+const state = {
+  manipPhotos: [], storePhotos: [], scholars: [], dates: []
+};
+let scholarSeq=0, dateSeq=0;
+
+const offerTemplates = {
+  enrolled: {
+    tag:"For our families", cta:"Book their free assessment",
+    text:"Refer a friend this month — when a family you send joins, both households get $50 off the next month's tuition. Just have them mention your name when they reach out."
+  },
+  onhold: {
+    tag:"Your spot is waiting", cta:"Reserve your return",
+    text:"We've saved your spot. Come back this month and your first two sessions are on us — just let us know you're ready."
+  },
+  exit: {
+    tag:"We'd love you back", cta:"Come see what's new",
+    text:"We'd love to have you back. Re-enroll this month and we'll waive the registration fee. Reach out and mention you're a returning family."
+  },
+  lead: {
+    tag:"Ready to begin?", cta:"Grab a time",
+    text:"Ready to start? Book your free assessment this month — tell us what brought you in, we'd love to know."
+  },
+  friends: {
+    tag:"Share the word", cta:"Send them our way",
+    text:"Know a family who could use us? Send them our way — have them mention you sent them when they call."
+  },
+  custom: { tag:"Special offer", cta:"Learn more", text:"" }
+};
+let currentTag = offerTemplates.enrolled.tag;
+
+const seasonEmojis = ["🌷","☀️","🍁","❄️","🎓","🎃","🎄","🌸","🌼","🍎","⭐","🎉","🌻","🦃","💚","🌈","🇨🇦"];
+
+// KPI sentence builders — one number in, one consistent sentence out
+const kpiDefs = {
+  level:   { icon:"📈", cap:"moved up a level or grade band",
+             sentence:v=>`${v}% of our students moved up a level or grade band this month.` },
+  redeem:  { icon:"🛍️", cap:"Scholars points redeemed",
+             sentence:v=>`${v} Scholars points redeemed — effort paying off, literally.` },
+  session: { icon:"📚", cap:"sessions delivered",
+             sentence:v=>`${v} learning sessions delivered across the centre.` }
+};
+
+/* ---------------- helpers ---------------- */
+const $ = id => document.getElementById(id);
+const esc = s => (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const val = id => ($(id)?$(id).value:"").trim();
+const lines = id => val(id).split("\n").map(l=>l.trim()).filter(Boolean);
+
+function fileToDataURL(file, cb){
+  const r = new FileReader();
+  r.onload = () => cb(r.result);
+  r.readAsDataURL(file);
+}
+
+/* ---------------- dynamic rows ---------------- */
+function renderPhotoEditor(container, arr, key){
+  container.innerHTML = "";
+  arr.forEach((src,i)=>{
+    const c = document.createElement("div");
+    c.className="card";
+    c.innerHTML = `<button class="rmv" title="Remove">×</button>
+      <div class="imgwrap">
+        <img class="thumb" src="${src}" alt="">
+        <label class="filebtn">Replace<input type="file" accept="image/*"></label>
+      </div>`;
+    c.querySelector(".rmv").onclick=()=>{arr.splice(i,1);renderPhotoEditor(container,arr,key);render();};
+    c.querySelector("input[type=file]").onchange=e=>{
+      if(e.target.files[0]) fileToDataURL(e.target.files[0],d=>{arr[i]=d;renderPhotoEditor(container,arr,key);render();});
+    };
+    container.appendChild(c);
+  });
+}
+
+function addPhoto(container, arr, key){
+  const c = document.createElement("div");
+  c.className="card";
+  c.innerHTML=`<label class="filebtn">Choose image<input type="file" accept="image/*"></label>`;
+  c.querySelector("input").onchange=e=>{
+    if(e.target.files[0]) fileToDataURL(e.target.files[0],d=>{arr.push(d);renderPhotoEditor(container,arr,key);render();});
+  };
+  container.appendChild(c);
+}
+
+function renderScholars(){
+  const wrap=$("scholars"); wrap.innerHTML="";
+  state.scholars.forEach((s,i)=>{
+    const c=document.createElement("div"); c.className="card";
+    c.innerHTML=`<button class="rmv">×</button>
+      <div class="field"><label>Name (First + last initial)</label><input type="text" value="${esc(s.name)}" placeholder="Aanya P."></div>
+      <div class="field"><label>Grade</label><input type="text" value="${esc(s.grade)}" placeholder="4"></div>
+      <div class="field"><label>Why they earned it</label><textarea placeholder="turning her multiplication facts around">${esc(s.reason)}</textarea></div>
+      <div class="imgwrap">
+        ${s.img?`<img class="thumb" src="${s.img}">`:`<div class="thumb"></div>`}
+        <label class="filebtn">${s.img?'Replace photo':'Add photo'}<input type="file" accept="image/*"></label>
+      </div>`;
+    const [nm,gr]=c.querySelectorAll("input[type=text]");
+    nm.oninput=e=>{s.name=e.target.value;render();};
+    gr.oninput=e=>{s.grade=e.target.value;render();};
+    c.querySelector("textarea").oninput=e=>{s.reason=e.target.value;render();};
+    c.querySelector("input[type=file]").onchange=e=>{if(e.target.files[0])fileToDataURL(e.target.files[0],d=>{s.img=d;renderScholars();render();});};
+    c.querySelector(".rmv").onclick=()=>{state.scholars.splice(i,1);renderScholars();render();};
+    wrap.appendChild(c);
+  });
+}
+
+function renderDates(){
+  const wrap=$("dates"); wrap.innerHTML="";
+  state.dates.forEach((d,i)=>{
+    const c=document.createElement("div"); c.className="card";
+    c.innerHTML=`<button class="rmv">×</button>
+      <div class="two">
+        <div class="field"><label>Date</label><input type="text" class="dt" value="${esc(d.date)}" placeholder="Mar 10–14"></div>
+        <div class="field"><label>Event</label><input type="text" class="ev" value="${esc(d.event)}" placeholder="March Break"></div>
+      </div>`;
+    c.querySelector(".dt").oninput=e=>{d.date=e.target.value;render();};
+    c.querySelector(".ev").oninput=e=>{d.event=e.target.value;render();};
+    c.querySelector(".rmv").onclick=()=>{state.dates.splice(i,1);renderDates();render();};
+    wrap.appendChild(c);
+  });
+}
+
+/* ---------------- build the email ---------------- */
+function buildEmail(){
+  const month=val("month")||"[Month]";
+  const emoji=val("emoji")||"🎓";
+  const announce=lines("announce");
+  const greet=val("greetHead");
+  const open=val("openNote");
+  const kLevel=val("kpiLevelPct"), kRedeem=val("kpiRedeemed"), kSess=val("kpiSessions");
+  const review=lines("review");
+  const lookForward=lines("lookForward");
+  const values=val("values");
+  const manipText=val("manipText");
+  const storeItems=lines("storeItems");
+  const storeEarn=val("storeEarn");
+  const dates=state.dates.filter(d=>d.date||d.event);
+  const scholars=state.scholars.filter(s=>s.name||s.reason);
+  const offerText=val("offerText");
+  const offerCta=val("offerCta");
+  const offerLink=val("offerLink")||"#";
+  const thanks=val("thanks");
+  const insta=val("insta"), fb=val("fb");
+  const wisdom=val("wisdom");
+  const wisdomAttr=val("wisdomAttr");
+  const grat=val("gratitude");
+  const signName=val("signName")||"The Team";
+  const address=val("address"), phone=val("phone"), email=val("email");
+
+  let h="";
+
+  // banner
+  h+=`<div class="em-banner">
+    <div class="kick">Scholars Education Centre · The Queensway</div>
+    <h1>${emoji} Monthly Newsletter</h1>
+    <div class="month">${esc(month)}</div>
+  </div><div class="em-body">`;
+
+  // opening
+  if(greet||open){
+    h+=`<div class="em-section"><div class="em-open">
+      ${greet?`<span class="hi">${esc(greet)}</span>`:""}
+      ${esc(open)}
+    </div></div>`;
+  }
+
+  // announcements — right after opening
+  if(announce.length){
+    h+=`<div class="em-section"><div class="em-announce">
+      <div class="a-h">📌 Important Announcements</div>
+      <ul>${announce.map(a=>`<li>${esc(a)}</li>`).join("")}</ul>
+    </div></div>`;
+  }
+
+  // month in review — KPI sentences first, then custom highlights
+  const kpiBullets=[];
+  if(kLevel!=="") kpiBullets.push(kpiDefs.level.sentence(esc(kLevel)));
+  if(kRedeem!=="") kpiBullets.push(kpiDefs.redeem.sentence(esc(kRedeem)));
+  if(kSess!=="") kpiBullets.push(kpiDefs.session.sentence(esc(kSess)));
+  const allBullets=[...kpiBullets, ...review.map(esc)];
+  if(allBullets.length){
+    h+=`<div class="em-section"><div class="em-h">📚 Our Month in Review</div>
+      <ul class="em-list">${allBullets.map(b=>`<li>${b}</li>`).join("")}</ul></div>`;
+  }
+
+  // manipulation shelf
+  if(manipText||state.manipPhotos.length){
+    h+=`<div class="em-section"><div class="em-h">🧩 The Manipulation Shelf in Action</div>`;
+    if(state.manipPhotos.length) h+=`<div class="em-photos">${state.manipPhotos.map(p=>`<img src="${p}">`).join("")}</div>`;
+    if(manipText) h+=`<div class="em-note">${esc(manipText)}</div>`;
+    h+=`<div class="em-cta-ask">Ask us about a hands-on session for your child.</div></div>`;
+  }
+
+  // scholars
+  if(scholars.length){
+    h+=`<div class="em-section"><div class="em-h">⭐ Scholars of the Month</div>`;
+    scholars.forEach(s=>{
+      h+=`<div class="scholar">
+        ${s.img?`<img src="${s.img}">`:`<div style="width:74px;height:74px;border-radius:50%;background:#eef1f4;border:3px solid var(--gold);flex:none"></div>`}
+        <div class="s-body"><span class="s-name">${esc(s.name)}${s.grade?`, Grade ${esc(s.grade)}`:""}</span>${s.reason?` — for ${esc(s.reason)}`:""}</div>
+      </div>`;
+    });
+    h+=`<div class="em-cta-ask">Congratulations — we're proud of you! 👏</div></div>`;
+  }
+
+  // ── the month ahead starts here ──
+  // what to look forward to
+  if(lookForward.length){
+    h+=`<div class="em-section"><div class="em-h">🔭 What to Look Forward To</div>
+      <ul class="em-list">${lookForward.map(l=>`<li>${esc(l)}</li>`).join("")}</ul></div>`;
+  }
+
+  // store
+  if(storeItems.length||state.storePhotos.length){
+    h+=`<div class="em-section"><div class="em-h">🛍️ New at the Scholars Store</div>`;
+    if(storeItems.length) h+=`<div class="store-items">${storeItems.map(i=>`<span class="store-chip">${esc(i)}</span>`).join("")}</div>`;
+    if(state.storePhotos.length) h+=`<div class="em-photos">${state.storePhotos.map(p=>`<img src="${p}">`).join("")}</div>`;
+    h+=`<div class="em-note">Students earn store points for ${esc(storeEarn||"effort & milestones")} and cash them in for the good stuff. <em>Ask your child what they're saving up for!</em></div></div>`;
+  }
+
+  // dates
+  if(dates.length){
+    h+=`<div class="em-section"><div class="em-h">📅 Dates to Remember</div>
+      <ul class="dates">${dates.map(d=>`<li><span class="d">${esc(d.date)}</span><span>${esc(d.event)}</span></li>`).join("")}</ul></div>`;
+  }
+
+  // offer
+  if(offerText){
+    h+=`<div class="em-section"><div class="offer">
+      <span class="o-tag">${esc(currentTag)}</span>
+      <div class="o-text">${esc(offerText)}</div>
+      ${offerCta?`<a class="o-cta" href="${esc(offerLink)}">${esc(offerCta)} →</a>`:""}
+    </div></div>`;
+  }
+
+  // thanks
+  if(thanks){
+    h+=`<div class="em-section"><div class="em-h">💙 A Thank You</div><div class="thanks">${esc(thanks)}</div></div>`;
+  }
+
+  // social
+  if(insta||fb){
+    h+=`<div class="em-section"><div class="social">
+      <div class="lead">Follow us and see the daily magic 👇</div>
+      ${insta?`<a href="${esc(insta)}">📸 Instagram</a>`:""}
+      ${fb?`<a href="${esc(fb)}">👍 Facebook</a>`:""}
+    </div></div>`;
+  }
+
+  // values band (full-width, breaks out of body padding) — verbatim from playbook
+  if(values){
+    h+=`</div><div class="em-values">
+      <div class="v-h">What We Stand For</div>
+      <div class="v-para">${esc(values)}</div>
+    </div><div class="em-body">`;
+  }
+
+  // wisdom + signoff
+  if(wisdom||grat){
+    h+=`<div class="em-section"><div class="wisdom">
+      ${wisdom?`<div class="quote">"${esc(wisdom)}"</div>`:""}
+      ${wisdomAttr?`<div class="attr">${esc(wisdomAttr)}</div>`:""}
+      ${grat?`<div class="grat">${esc(grat)}</div>`:""}
+    </div>
+    <div class="signoff">Warmly,<br><span class="team">${esc(signName)} & the Scholars Queensway Team</span></div></div>`;
+  }
+
+  h+=`</div>`; // end em-body
+
+  // footer
+  h+=`<div class="em-footer">
+    ${address?`📍 ${esc(address)}`:""} ${phone?`&nbsp;·&nbsp; 📞 ${esc(phone)}`:""} ${email?`&nbsp;·&nbsp; ✉️ ${esc(email)}`:""}
+    <br><a href="#">Unsubscribe</a> · <a href="#">Update preferences</a>
+  </div>`;
+
+  return h;
+}
+
+// build emoji picker
+(function(){
+  const p=$("emojiPicker");
+  seasonEmojis.forEach(e=>{
+    const b=document.createElement("button");
+    b.type="button";b.className="emoji-btn";b.textContent=e;
+    b.onclick=()=>{ $("emoji").value=e; markEmoji(); render(); };
+    p.appendChild(b);
+  });
+})();
+function markEmoji(){
+  const cur=val("emoji");
+  document.querySelectorAll(".emoji-btn").forEach(b=>b.classList.toggle("sel",b.textContent===cur));
+}
+
+// KPI live previews under each input
+function updateKpiPreviews(){
+  const map=[
+    ["kpiLevelPct","prevLevel",kpiDefs.level],
+    ["kpiRedeemed","prevRedeem",kpiDefs.redeem],
+    ["kpiSessions","prevSess",kpiDefs.session]
+  ];
+  map.forEach(([inp,prev,def])=>{
+    const v=val(inp), el=$(prev);
+    if(v===""){ el.className="kpi-preview empty"; el.textContent="Enter a value to preview"; }
+    else { el.className="kpi-preview"; el.textContent=def.icon+" "+def.sentence(v); }
+  });
+}
+
+function render(){
+  updateKpiPreviews();
+  markEmoji();
+  const html=buildEmail();
+  $("emailPreview").innerHTML = html.trim() ? html : `<div style="padding:60px;text-align:center" class="empty-hint">Start filling in the form — your newsletter appears here.</div>`;
+}
+
+/* ---------------- export ---------------- */
+function fullDoc(){
+  // pull the email markup + inline the styles it uses so the exported file is standalone
+  const styles = document.querySelector("style").innerHTML;
+  const inner = $("emailPreview").innerHTML;
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(val("subject")||"Scholars Newsletter")}</title>
+<style>body{margin:0;background:#f5f3ee;padding:24px;font-family:Georgia,serif}${styles}</style></head>
+<body><div class="email">${inner}</div></body></html>`;
+}
+
+$("generate").onclick=()=>{
+  render();
+  const b=$("generate");const t=b.textContent;
+  b.textContent="Generated ✓";setTimeout(()=>b.textContent=t,1400);
+  // desktop: scroll preview to top; mobile: jump to the preview pane
+  const scroller=document.querySelector(".scroll");
+  if(scroller) scroller.scrollTop=0;
+  document.querySelector(".preview-side").scrollIntoView({behavior:"smooth",block:"start"});
+};
+
+$("download").onclick=()=>{
+  const blob=new Blob([fullDoc()],{type:"text/html"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`scholars-newsletter-${(val("month")||"draft").toLowerCase().replace(/\s+/g,"-")}.html`;
+  a.click();
+};
+$("copyHtml").onclick=()=>{
+  navigator.clipboard.writeText(fullDoc()).then(()=>{
+    const b=$("copyHtml");const t=b.textContent;b.textContent="Copied ✓";setTimeout(()=>b.textContent=t,1400);
+  });
+};
+
+/* ---------------- segment select ---------------- */
+$("segment").onchange=e=>{
+  const t=offerTemplates[e.target.value];
+  currentTag=t.tag;
+  if(e.target.value!=="custom"){ $("offerText").value=t.text; $("offerCta").value=t.cta; }
+  render();
+};
+
+/* ---------------- wire add buttons ---------------- */
+document.querySelectorAll("[data-add]").forEach(btn=>{
+  btn.onclick=()=>{
+    const k=btn.dataset.add;
+    if(k==="manip") addPhoto($("manipPhotos"),state.manipPhotos,"manip");
+    if(k==="store") addPhoto($("storePhotos"),state.storePhotos,"store");
+    if(k==="scholar"){state.scholars.push({name:"",grade:"",reason:"",img:""});renderScholars();}
+    if(k==="date"){state.dates.push({date:"",event:""});renderDates();}
+  };
+});
+
+/* ---------------- live inputs ---------------- */
+["month","emoji","subject","announce","greetHead","openNote",
+ "kpiLevelPct","kpiRedeemed","kpiSessions","review","lookForward","manipText",
+ "storeItems","storeEarn","offerText","offerCta","offerLink","values","thanks",
+ "insta","fb","wisdom","wisdomAttr","gratitude","signName","address","phone","email"]
+ .forEach(id=>{ const el=$(id); if(el) el.addEventListener("input",render); });
+
+/* ---------------- sample loader ---------------- */
+$("loadSample").onclick=()=>{
+  $("month").value="March 2026"; $("emoji").value="🌷";
+  $("subject").value="Scholars Queensway — March News 🎓";
+  $("announce").value="No classes Mar 10–14 (March Break — centre open, regular hours)\nNew Saturday morning slots now open — reply to reserve\nSpring session registration closes Mar 31";
+  $("greetHead").value="Happy March from all of us at Scholars!";
+  $("openNote").value="Spring is in the air, and our centre has been buzzing. Thank you to every family who made February one of our strongest months yet. Here's what we've been up to — and what's coming.";
+  $("kpiLevelPct").value="34";
+  $("kpiRedeemed").value="87";
+  $("kpiSessions").value="642";
+  $("review").value="Ran our first March Break prep intensive — 18 students strong\nKicked off our new Grade 9 math readiness program\nWelcomed two new tutors to the team";
+  $("lookForward").value="Spring reading challenge kicks off — prizes for our top readers\nNew Wednesday coding club begins\nMid-month parent-teacher progress check-ins";
+  $("values").value="At Scholars, we believe every child can succeed with the right support. We are guided by effort over perfection, respect for one another, curiosity that drives learning, and a genuine care for each student's growth. These values shape every session we run.";
+  $("manipText").value="This month our students got hands-on with fraction tiles and base-ten blocks. Watching abstract fractions become something they could hold made all the difference for our Grade 3 group — three students who'd struggled for weeks had it click in a single session.";
+  $("storeItems").value="Glow-in-the-dark pencils\nMini puzzle sets\nAchievement badges";
+  $("storeEarn").value="effort, attendance & milestones";
+  $("segment").value="enrolled";
+  const t=offerTemplates.enrolled; currentTag=t.tag;
+  $("offerText").value=t.text; $("offerCta").value=t.cta;
+  $("offerLink").value="https://scholars.example/book";
+  $("thanks").value="To our families: your trust means everything. To our tutors: thank you for showing up for these kids every single day.";
+  $("insta").value="https://instagram.com/scholarsqueensway";
+  $("fb").value="https://facebook.com/scholarsqueensway";
+  $("wisdom").value="Children are not things to be molded, but people to be unfolded.";
+  $("wisdomAttr").value="— Jess Lair";
+  $("gratitude").value="Thank you for letting us be part of your child's journey.";
+  $("signName").value="Carlos";
+  $("address").value="778 The Queensway, Etobicoke";
+  $("phone").value="(416) XXX-XXXX";
+  $("email").value="info@scholarsqueensway.ca";
+  state.scholars=[
+    {name:"Aanya P.",grade:"4",reason:"turning her multiplication facts around and mentoring a younger student",img:""},
+    {name:"Daniel K.",grade:"8",reason:"perfect attendance and a 15% jump on his science unit test",img:""}
+  ];
+  state.dates=[
+    {date:"Mar 10–14",event:"March Break (centre open, regular hours)"},
+    {date:"Mar 17",event:"Spring session registration opens"},
+    {date:"Mar 31",event:"Report card review sign-up deadline"}
+  ];
+  renderScholars(); renderDates(); render();
+};
+
+render();
+</script>
+</body>
+</html>
